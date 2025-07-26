@@ -1,34 +1,34 @@
-# 支援, Shien
+# Shien (支援)
 
-知的労働者を支援してくれるツールです。
+The tool to support knowledge workers worldwide.
 
-## ビルドと実行
+## Build and Run
 
-### ビルド
+### Build
 ```bash
 make build
 ```
 
-### 実行
+### Run
 ```bash
-# ビルドして実行
+# Build and run
 make run
 
-# または、ビルド済みのバイナリを直接実行
+# Or run the built binary directly
 ./shien
 ```
 
-### インストール
+### Install
 ```bash
-# $GOPATH/bin にインストール
+# Install to $GOPATH/bin
 make install
 ```
 
-### その他のコマンド
+### Other Commands
 ```bash
-# ヘルプを表示
+# Show help
 make help
 
-# クリーンアップ
+# Clean up
 make clean
 ```
