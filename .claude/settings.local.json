@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "LS(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "TodoRead(*)",
+      "TodoWrite(*)",
+      "NotebookRead(*)",
+      "NotebookEdit(*)",
+      "Task(*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:cookbook.openai.com)",
+      "WebFetch(domain:community.openai.com)",
+      "WebFetch(domain:langchain-ai.github.io)",
+      "Bash(npm run research:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:js.langchain.com)",
+      "Bash(mkdir:*)",
+      "Bash(go mod init:*)",
+      "Bash(make:*)",
+      "Bash(find:*)"
+    ],
+    "deny": []
+  }
+}
