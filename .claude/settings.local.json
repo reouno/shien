@@ -34,7 +34,16 @@
       "Bash(mkdir:*)",
       "Bash(go mod init:*)",
       "Bash(make:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(osascript:*)",
+      "Bash(rm:*)",
+      "Bash(chmod:*)",
+      "Bash(go get:*)",
+      "Bash(ls:*)",
+      "Bash(defaults read:*)",
+      "Bash(/Users/leo/src/shien/test_notifications.sh)",
+      "Bash(go mod edit:*)",
+      "Bash(go mod:*)"
     ],
     "deny": []
   }

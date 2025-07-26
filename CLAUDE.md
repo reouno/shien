@@ -9,9 +9,12 @@ Shien (支援) is a Go-based daemon application designed to support knowledge wo
 ## Architecture
 
 The codebase follows a standard Go project layout:
-- `cmd/shien/main.go`: Entry point that initializes and manages the daemon lifecycle
+- `cmd/shien/main.go`: Entry point that initializes the daemon and system tray
 - `internal/daemon/daemon.go`: Core daemon implementation with context-based cancellation
-- The daemon runs a heartbeat every 30 seconds and responds to SIGINT/SIGTERM signals for graceful shutdown
+- `internal/tray/tray.go`: System tray UI implementation using getlantern/systray
+- `internal/ui/display.go`: CLI display utilities for terminal output
+- The daemon runs as a menu bar application with notification support
+- Sends reminders every 5 minutes to take breaks
 
 ## Common Commands
 
