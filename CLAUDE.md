@@ -13,8 +13,13 @@ The codebase follows a standard Go project layout:
 - `internal/daemon/daemon.go`: Core daemon implementation with context-based cancellation
 - `internal/tray/tray.go`: System tray UI implementation using getlantern/systray
 - `internal/ui/display.go`: CLI display utilities for terminal output
+- `internal/database/`: Database layer with repository pattern
+  - `repository/`: Domain-specific repositories (activity, etc.)
+  - `migrations/`: Database migrations organized by version
+  - `models.go`: Data models
+  - `interfaces.go`: Repository interfaces
 - The daemon runs as a menu bar application with notification support
-- Sends reminders every 5 minutes to take breaks
+- Records activity every 5 minutes to track app usage
 
 ## Common Commands
 

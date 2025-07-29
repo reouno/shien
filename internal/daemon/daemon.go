@@ -2,8 +2,11 @@ package daemon
 
 import (
 	"context"
+	"log"
 	"time"
-	
+
+	"shien/internal/config"
+	"shien/internal/database"
 	"shien/internal/tray"
 	"shien/internal/ui"
 )
@@ -13,12 +16,34 @@ type Daemon struct {
 	cancel  context.CancelFunc
 	display *ui.Display
 	tray    *tray.Tray
+	config  *config.Manager
+	db      *database.DB
+	repo    *database.Repository
 }
 
 func New() *Daemon {
+	// Initialize config manager
+	configMgr, err := config.NewManager()
+	if err != nil {
+		log.Printf("Failed to initialize config: %v, using defaults", err)
+		configMgr = &config.Manager{}
+	}
+
+	// Initialize database
+	db, err := database.New()
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	// Create repository
+	repo := database.NewRepository(db)
+
 	return &Daemon{
 		display: ui.NewDisplay(),
 		tray:    tray.New(),
+		config:  configMgr,
+		db:      db,
+		repo:    repo,
 	}
 }
 
@@ -28,7 +53,22 @@ func (d *Daemon) Start() error {
 	// Display startup message
 	d.display.ShowBanner("Shien Daemon Started", "Supporting your knowledge work")
 	d.display.ShowSuccess("Daemon is ready")
-	
+
+	// Show config and database locations
+	if d.config != nil {
+		d.display.ShowInfo("Config: " + d.config.ConfigPath())
+	}
+	if d.db != nil {
+		d.display.ShowInfo("Database: " + d.db.Path())
+	}
+
+	// Record initial activity
+	if d.repo != nil {
+		if err := d.repo.Activity().RecordActivity(); err != nil {
+			log.Printf("Failed to record activity: %v", err)
+		}
+	}
+
 	// Send notification via system tray
 	d.tray.SendNotification("Shien", "Support daemon started")
 
@@ -42,6 +82,12 @@ func (d *Daemon) Stop() error {
 	if d.cancel != nil {
 		d.cancel()
 	}
+
+	// Close database
+	if d.db != nil {
+		d.db.Close()
+	}
+
 	// Stop the system tray
 	d.tray.Stop()
 	return nil
@@ -53,8 +99,9 @@ func (d *Daemon) StartTray() {
 }
 
 func (d *Daemon) run() {
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
+	// Record activity every 5 minutes
+	activityTicker := time.NewTicker(5 * time.Minute)
+	defer activityTicker.Stop()
 
 	d.display.ShowInfo("Daemon monitoring started")
 
@@ -63,15 +110,14 @@ func (d *Daemon) run() {
 		case <-d.ctx.Done():
 			d.display.ShowInfo("Daemon shutting down...")
 			return
-		case <-ticker.C:
-			// Example: Show different messages based on time
-			now := time.Now()
-			if now.Minute()%5 == 0 {
-				d.display.ShowAlert("Remember to take a break!")
-				// Send notification via system tray
-				d.tray.SendNotification("Break Reminder", "Time to rest your eyes and stretch!")
-			} else {
-				d.display.ShowInfo("System check - All systems operational")
+		case <-activityTicker.C:
+			// Record activity
+			if d.repo != nil {
+				if err := d.repo.Activity().RecordActivity(); err != nil {
+					log.Printf("Failed to record activity: %v", err)
+				} else {
+					d.display.ShowInfo("Activity recorded")
+				}
 			}
 		}
 	}
