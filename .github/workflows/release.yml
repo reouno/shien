@@ -9,19 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: macos-12
-            arch: amd64
-            goos: darwin
-            goarch: amd64
-          - os: macos-14
-            arch: arm64
-            goos: darwin
-            goarch: arm64
-    runs-on: ${{ matrix.os }}
+  release:
+    runs-on: macos-14  # Apple Silicon runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,28 +22,14 @@ jobs:
 
       - name: Build binaries
         run: |
-          echo "Building for ${{ matrix.goos }}-${{ matrix.goarch }}..."
-          go build -ldflags="-s -w" -o shien-${{ matrix.arch }} ./cmd/shien
-          go build -ldflags="-s -w" -o shienctl-${{ matrix.arch }} ./cmd/shienctl
-          tar -czf shien-${{ matrix.goos }}-${{ matrix.arch }}.tar.gz shien-${{ matrix.arch }} shienctl-${{ matrix.arch }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: shien-${{ matrix.goos }}-${{ matrix.arch }}
-          path: shien-${{ matrix.goos }}-${{ matrix.arch }}.tar.gz
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+          echo "Building ARM64 binary (works on both Apple Silicon and Intel Macs)..."
+          go build -ldflags="-s -w" -o shien ./cmd/shien
+          go build -ldflags="-s -w" -o shienctl ./cmd/shienctl
+          tar -czf shien-darwin-arm64.tar.gz shien shienctl
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            shien-darwin-amd64/shien-darwin-amd64.tar.gz
-            shien-darwin-arm64/shien-darwin-arm64.tar.gz
+            shien-darwin-arm64.tar.gz
           generate_release_notes: true
