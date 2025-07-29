@@ -65,7 +65,7 @@ fi
 echo -e "${YELLOW}Updating Homebrew formula...${NC}"
 FORMULA_PATH="$HOMEBREW_REPO_PATH/Formula/shien.rb"
 sed -i.bak "s/version \".*\"/version \"${VERSION}\"/" "$FORMULA_PATH"
-sed -i.bak "s|download/v[0-9.]\+/|download/${TAG}/|" "$FORMULA_PATH"
+sed -i.bak "s|download/v[0-9.]*|download/${TAG}|g" "$FORMULA_PATH"
 sed -i.bak "s/sha256 \".*\"/sha256 \"${SHA256}\"/" "$FORMULA_PATH"
 rm "$FORMULA_PATH.bak"
 
