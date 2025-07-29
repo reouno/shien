@@ -19,13 +19,12 @@ builds:
     ldflags:
       - -s -w
 
-  # shienctl - cross platform
+  # shienctl - also macOS only since we're distributing via Homebrew
   - id: shienctl
     main: ./cmd/shienctl
     binary: shienctl
     goos:
       - darwin
-      - linux
     goarch:
       - amd64
       - arm64
@@ -35,12 +34,10 @@ builds:
       - -s -w
 
 archives:
-  - format: tar.gz
-    name_template: >-
+  - name_template: >-
       {{ .ProjectName }}-
       {{- .Os }}-
       {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
     files:
       - LICENSE*
@@ -50,7 +47,7 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  version_template: "{{ .Tag }}-next"
 
 changelog:
   sort: asc

@@ -22,6 +22,15 @@ jobs:
         with:
           go-version: '1.23'
 
+      - name: Debug directory structure
+        run: |
+          pwd
+          ls -la
+          echo "---"
+          ls -la cmd/ || echo "cmd directory not found"
+          echo "---"
+          find . -name "*.go" -type f | head -10
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
