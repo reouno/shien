@@ -25,9 +25,9 @@ go.work.sum
 .air.toml
 tmp/
 
-# Project binary
-shien
-shienctl
+# Project binary (only in root directory)
+/shien
+/shienctl
 
 # IDE specific files
 .idea/
