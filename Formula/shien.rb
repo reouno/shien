@@ -1,10 +1,10 @@
 class Shien < Formula
   desc "Background daemon application to support knowledge workers"
-  homepage "https://github.com/yourusername/shien"
-  url "https://github.com/yourusername/shien/archive/refs/tags/v0.1.0.tar.gz"
+  homepage "https://github.com/reouno/shien"
+  url "https://github.com/reouno/shien/archive/refs/tags/v0.1.0.tar.gz"
   sha256 "PLACEHOLDER_SHA256"
   license "MIT"
-  head "https://github.com/yourusername/shien.git", branch: "main"
+  head "https://github.com/reouno/shien.git", branch: "main"
 
   depends_on "go" => :build
 
