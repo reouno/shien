@@ -5,18 +5,21 @@ before:
     - go mod tidy
 
 builds:
-  - id: shien
+  # shien daemon - macOS only due to systray dependency
+  - id: shien-darwin
     main: ./cmd/shien
     binary: shien
     goos:
       - darwin
-      - linux
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=1
     ldflags:
       - -s -w
 
+  # shienctl - cross platform
   - id: shienctl
     main: ./cmd/shienctl
     binary: shienctl
@@ -26,6 +29,8 @@ builds:
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=0
     ldflags:
       - -s -w
 
