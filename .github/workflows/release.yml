@@ -14,28 +14,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
 
-      - name: Debug directory structure
+      - name: Build binaries
         run: |
+          # Check directory structure
+          echo "Current directory:"
           pwd
+          echo "Directory contents:"
           ls -la
-          echo "---"
-          ls -la cmd/ || echo "cmd directory not found"
-          echo "---"
+          echo "Go files:"
           find . -name "*.go" -type f | head -10
+          
+          # Build for macOS AMD64
+          echo "Building macOS AMD64..."
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o shien-amd64 ./cmd/shien
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o shienctl-amd64 ./cmd/shienctl
+          tar -czf shien-darwin-amd64.tar.gz shien-amd64 shienctl-amd64
+          
+          # Build for macOS ARM64
+          echo "Building macOS ARM64..."
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o shien-arm64 ./cmd/shien
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o shienctl-arm64 ./cmd/shienctl
+          tar -czf shien-darwin-arm64.tar.gz shien-arm64 shienctl-arm64
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          distribution: goreleaser
-          version: '~> v2'
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            shien-darwin-amd64.tar.gz
+            shien-darwin-arm64.tar.gz
+          generate_release_notes: true
