@@ -9,8 +9,19 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-12
+            arch: amd64
+            goos: darwin
+            goarch: amd64
+          - os: macos-14
+            arch: arm64
+            goos: darwin
+            goarch: arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,30 +33,28 @@ jobs:
 
       - name: Build binaries
         run: |
-          # Check directory structure
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
-          echo "Go files:"
-          find . -name "*.go" -type f | head -10
-          
-          # Build for macOS AMD64
-          echo "Building macOS AMD64..."
-          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o shien-amd64 ./cmd/shien
-          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o shienctl-amd64 ./cmd/shienctl
-          tar -czf shien-darwin-amd64.tar.gz shien-amd64 shienctl-amd64
-          
-          # Build for macOS ARM64
-          echo "Building macOS ARM64..."
-          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o shien-arm64 ./cmd/shien
-          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o shienctl-arm64 ./cmd/shienctl
-          tar -czf shien-darwin-arm64.tar.gz shien-arm64 shienctl-arm64
+          echo "Building for ${{ matrix.goos }}-${{ matrix.goarch }}..."
+          go build -ldflags="-s -w" -o shien-${{ matrix.arch }} ./cmd/shien
+          go build -ldflags="-s -w" -o shienctl-${{ matrix.arch }} ./cmd/shienctl
+          tar -czf shien-${{ matrix.goos }}-${{ matrix.arch }}.tar.gz shien-${{ matrix.arch }} shienctl-${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shien-${{ matrix.goos }}-${{ matrix.arch }}
+          path: shien-${{ matrix.goos }}-${{ matrix.arch }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            shien-darwin-amd64.tar.gz
-            shien-darwin-arm64.tar.gz
+            shien-darwin-amd64/shien-darwin-amd64.tar.gz
+            shien-darwin-arm64/shien-darwin-arm64.tar.gz
           generate_release_notes: true
