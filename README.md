@@ -2,6 +2,22 @@
 
 The tool to support knowledge workers worldwide.
 
+## Installation
+
+### Homebrew (macOS)
+
+```bash
+brew tap reouno/shien
+brew install shien
+brew services start shien
+```
+
+### Verify Installation
+
+```bash
+shienctl ping
+```
+
 ## Build and Run
 
 ### Build
