@@ -10,10 +10,11 @@ var Migration001ActivityLogs = Migration{
 	Description: "Create activity logs table",
 	Up: func(tx *sql.Tx) error {
 		// Activity logs table for tracking app is running
+		// recorded_at stores timestamps in UTC format
 		if _, err := tx.Exec(`
 			CREATE TABLE IF NOT EXISTS activity_logs (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				recorded_at DATETIME NOT NULL
+				recorded_at DATETIME NOT NULL -- stored in UTC
 			)
 		`); err != nil {
 			return err

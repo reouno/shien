@@ -3,12 +3,14 @@ package repository
 import (
 	"database/sql"
 	"time"
+	
+	"shien/internal/utils"
 )
 
 // ActivityLog represents an activity record
 type ActivityLog struct {
-	ID         int64     `json:"id"`
-	RecordedAt time.Time `json:"recorded_at"`
+	ID         int64          `json:"id"`
+	RecordedAt utils.UTCTime `json:"recorded_at"`
 }
 
 // ActivityRepo implements ActivityRepository
@@ -24,13 +26,13 @@ func NewActivityRepo(conn *sql.DB) *ActivityRepo {
 // RecordActivity records that the app is running at the current time
 func (r *ActivityRepo) RecordActivity() error {
 	// Round to minute precision
-	now := time.Now().Truncate(time.Minute)
+	now := utils.Now().TruncateToMinute()
 	
 	// Try to insert, ignore if already exists for this minute
 	_, err := r.conn.Exec(`
 		INSERT OR IGNORE INTO activity_logs (recorded_at) 
-		VALUES (datetime(?, 'localtime'))
-	`, now.Format("2006-01-02 15:04:00"))
+		VALUES (?)
+	`, now)
 	
 	return err
 }
@@ -40,10 +42,10 @@ func (r *ActivityRepo) GetActivityLogs(from, to time.Time) ([]ActivityLog, error
 	rows, err := r.conn.Query(`
 		SELECT id, recorded_at 
 		FROM activity_logs 
-		WHERE recorded_at >= datetime(?, 'localtime') 
-		  AND recorded_at <= datetime(?, 'localtime')
+		WHERE recorded_at >= ? 
+		  AND recorded_at <= ?
 		ORDER BY recorded_at DESC
-	`, from.Format("2006-01-02 15:04:00"), to.Format("2006-01-02 15:04:00"))
+	`, utils.ToUTC(from), utils.ToUTC(to))
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +74,9 @@ func (r *ActivityRepo) GetActivitySummary(date time.Time) (map[string]interface{
 	err := r.conn.QueryRow(`
 		SELECT COUNT(*) 
 		FROM activity_logs 
-		WHERE recorded_at >= datetime(?, 'localtime') 
-		  AND recorded_at < datetime(?, 'localtime')
-	`, startOfDay.Format("2006-01-02 15:04:00"), endOfDay.Format("2006-01-02 15:04:00")).Scan(&count)
+		WHERE recorded_at >= ? 
+		  AND recorded_at < ?
+	`, utils.ToUTC(startOfDay), utils.ToUTC(endOfDay)).Scan(&count)
 	
 	if err != nil {
 		return nil, err
