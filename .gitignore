@@ -27,6 +27,7 @@ tmp/
 
 # Project binary
 shien
+shienctl
 
 # IDE specific files
 .idea/

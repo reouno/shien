@@ -7,18 +7,22 @@ import (
 
 	"shien/internal/config"
 	"shien/internal/database"
+	"shien/internal/rpc"
+	"shien/internal/service"
 	"shien/internal/tray"
 	"shien/internal/ui"
 )
 
 type Daemon struct {
-	ctx     context.Context
-	cancel  context.CancelFunc
-	display *ui.Display
-	tray    *tray.Tray
-	config  *config.Manager
-	db      *database.DB
-	repo    *database.Repository
+	ctx       context.Context
+	cancel    context.CancelFunc
+	display   *ui.Display
+	tray      *tray.Tray
+	config    *config.Manager
+	db        *database.DB
+	repo      *database.Repository
+	services  *service.Services
+	rpcServer *rpc.Server
 }
 
 func New() *Daemon {
@@ -37,13 +41,24 @@ func New() *Daemon {
 
 	// Create repository
 	repo := database.NewRepository(db)
+	
+	// Create service layer
+	services := service.NewServices(repo, configMgr)
+	
+	// Create RPC server
+	rpcServer, err := rpc.NewServer(services)
+	if err != nil {
+		log.Printf("Failed to create RPC server: %v", err)
+	}
 
 	return &Daemon{
-		display: ui.NewDisplay(),
-		tray:    tray.New(),
-		config:  configMgr,
-		db:      db,
-		repo:    repo,
+		display:   ui.NewDisplay(),
+		tray:      tray.New(),
+		config:    configMgr,
+		db:        db,
+		repo:      repo,
+		services:  services,
+		rpcServer: rpcServer,
 	}
 }
 
@@ -63,9 +78,18 @@ func (d *Daemon) Start() error {
 	}
 
 	// Record initial activity
-	if d.repo != nil {
-		if err := d.repo.Activity().RecordActivity(); err != nil {
+	if d.services != nil {
+		if err := d.services.Activity.RecordActivity(); err != nil {
 			log.Printf("Failed to record activity: %v", err)
+		}
+	}
+
+	// Start RPC server
+	if d.rpcServer != nil {
+		if err := d.rpcServer.Start(); err != nil {
+			log.Printf("Failed to start RPC server: %v", err)
+		} else {
+			d.display.ShowInfo("RPC server listening on Unix socket")
 		}
 	}
 
@@ -81,6 +105,11 @@ func (d *Daemon) Start() error {
 func (d *Daemon) Stop() error {
 	if d.cancel != nil {
 		d.cancel()
+	}
+
+	// Stop RPC server
+	if d.rpcServer != nil {
+		d.rpcServer.Stop()
 	}
 
 	// Close database
@@ -112,8 +141,8 @@ func (d *Daemon) run() {
 			return
 		case <-activityTicker.C:
 			// Record activity
-			if d.repo != nil {
-				if err := d.repo.Activity().RecordActivity(); err != nil {
+			if d.services != nil {
+				if err := d.services.Activity.RecordActivity(); err != nil {
 					log.Printf("Failed to record activity: %v", err)
 				} else {
 					d.display.ShowInfo("Activity recorded")

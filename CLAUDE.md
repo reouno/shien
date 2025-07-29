@@ -25,9 +25,25 @@ The codebase follows a standard Go project layout:
 
 ### Build and Run
 ```bash
-make build        # Build the binary
-make run          # Build and run the binary
-make install      # Install to $GOPATH/bin
+make build-all    # Build both daemon and CLI
+make run          # Build and run the daemon
+make install-all  # Install both to $GOPATH/bin
+```
+
+### Using the CLI
+```bash
+# Check if daemon is running
+shienctl ping
+
+# Show daemon status
+shienctl status
+
+# View activity logs
+shienctl activity -today
+shienctl activity -from 2024-01-01 -to 2024-01-31
+
+# Show configuration
+shienctl config
 ```
 
 ### Development

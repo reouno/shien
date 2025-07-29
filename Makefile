@@ -1,21 +1,38 @@
-.PHONY: build run clean install test
+.PHONY: build build-all build-daemon build-cli run clean install install-all test
 
-BINARY_NAME=shien
+DAEMON_NAME=shien
+CLI_NAME=shienctl
 GO=go
 GOFLAGS=-ldflags="-s -w"
 
-build:
-	$(GO) build $(GOFLAGS) -o $(BINARY_NAME) ./cmd/shien
+build: build-daemon
 
-run: build
-	./$(BINARY_NAME)
+build-all: build-daemon build-cli
+
+build-daemon:
+	$(GO) build $(GOFLAGS) -o $(DAEMON_NAME) ./cmd/shien
+
+build-cli:
+	$(GO) build $(GOFLAGS) -o $(CLI_NAME) ./cmd/shienctl
+
+run: build-daemon
+	./$(DAEMON_NAME)
 
 clean:
-	rm -f $(BINARY_NAME)
+	rm -f $(DAEMON_NAME) $(CLI_NAME)
 	$(GO) clean
 
-install: build
+install: install-all
+
+install-all: build-all
 	$(GO) install ./cmd/shien
+	$(GO) install ./cmd/shienctl
+
+install-daemon: build-daemon
+	$(GO) install ./cmd/shien
+
+install-cli: build-cli
+	$(GO) install ./cmd/shienctl
 
 test:
 	$(GO) test -v ./...
@@ -25,10 +42,16 @@ mod-tidy:
 
 help:
 	@echo "Available targets:"
-	@echo "  build      - Build the binary"
-	@echo "  run        - Build and run the binary"
-	@echo "  clean      - Remove binary and clean cache"
-	@echo "  install    - Install the binary to GOPATH/bin"
-	@echo "  test       - Run tests"
-	@echo "  mod-tidy   - Clean up go.mod and go.sum"
-	@echo "  help       - Show this help message"
+	@echo "  build        - Build the daemon (default)"
+	@echo "  build-all    - Build both daemon and CLI"
+	@echo "  build-daemon - Build only the daemon"
+	@echo "  build-cli    - Build only the CLI"
+	@echo "  run          - Build and run the daemon"
+	@echo "  clean        - Remove binaries and clean cache"
+	@echo "  install      - Install both daemon and CLI to GOPATH/bin"
+	@echo "  install-all  - Install both daemon and CLI"
+	@echo "  install-daemon - Install only the daemon"
+	@echo "  install-cli  - Install only the CLI"
+	@echo "  test         - Run tests"
+	@echo "  mod-tidy     - Clean up go.mod and go.sum"
+	@echo "  help         - Show this help message"
