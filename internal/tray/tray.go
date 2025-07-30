@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"shien/internal/notification"
 	"time"
 )
@@ -150,21 +151,19 @@ func (t *Tray) onExit() {
 
 // getShienctlCommand returns the appropriate shienctl command based on environment
 func getShienctlCommand(args string) string {
-	// Try to find shienctl in PATH first
-	if _, err := exec.LookPath("shienctl"); err == nil {
-		return fmt.Sprintf("shienctl %s", args)
-	}
-	
-	// If not found in PATH, try current executable's directory (development mode)
+	// In development, prefer local shienctl if it exists alongside shien
 	if exePath, err := os.Executable(); err == nil {
 		dir := filepath.Dir(exePath)
 		shienctlPath := filepath.Join(dir, "shienctl")
 		if _, err := os.Stat(shienctlPath); err == nil {
-			return fmt.Sprintf("%s %s", shienctlPath, args)
+			// If running from source directory (not installed path)
+			if !strings.Contains(dir, "/usr/") && !strings.Contains(dir, "/opt/") && !strings.Contains(dir, "go/bin") {
+				return fmt.Sprintf("%s %s", shienctlPath, args)
+			}
 		}
 	}
 	
-	// Fallback to just shienctl (will fail if not in PATH)
+	// Otherwise use shienctl from PATH
 	return fmt.Sprintf("shienctl %s", args)
 }
 
