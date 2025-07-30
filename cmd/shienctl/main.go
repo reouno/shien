@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 	
@@ -170,8 +171,16 @@ func handleActivity(client *rpc.Client, args []string) {
 		hourlyCount[hour]++
 	}
 	
+	// Sort hours in chronological order
+	var hours []string
+	for hour := range hourlyCount {
+		hours = append(hours, hour)
+	}
+	sort.Strings(hours)
+	
 	fmt.Println("Activity by hour:")
-	for hour, count := range hourlyCount {
+	for _, hour := range hours {
+		count := hourlyCount[hour]
 		bar := strings.Repeat("█", count)
 		fmt.Printf("%s: %s (%d)\n", hour, bar, count*5)
 	}
