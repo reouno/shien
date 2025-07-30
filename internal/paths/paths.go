@@ -51,9 +51,18 @@ func initDataDir() {
 		
 		// Priority order:
 		// 1. Already set via SetDataDir
-		// 2. SHIEN_DATA_DIR environment variable
-		// 3. Default ~/.config/shien
+		// 2. Development default (if built with -tags dev)
+		// 3. SHIEN_DATA_DIR environment variable
+		// 4. Default ~/.config/shien
 		
+		// Try development default first
+		if devDir := getDefaultDataDir(); devDir != "" {
+			if err := SetDataDir(devDir); err == nil {
+				return
+			}
+		}
+		
+		// Try environment variable
 		if envDir := os.Getenv("SHIEN_DATA_DIR"); envDir != "" {
 			if err := SetDataDir(envDir); err == nil {
 				return
