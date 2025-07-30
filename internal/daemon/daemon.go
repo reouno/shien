@@ -77,12 +77,7 @@ func (d *Daemon) Start() error {
 		d.display.ShowInfo("Database: " + d.db.Path())
 	}
 
-	// Record initial activity
-	if d.services != nil {
-		if err := d.services.Activity.RecordActivity(); err != nil {
-			log.Printf("Failed to record activity: %v", err)
-		}
-	}
+	// Don't record initial activity - wait for the next 5-minute interval
 
 	// Start RPC server
 	if d.rpcServer != nil {
@@ -128,11 +123,41 @@ func (d *Daemon) StartTray() {
 }
 
 func (d *Daemon) run() {
-	// Record activity every 5 minutes
+	d.display.ShowInfo("Daemon monitoring started")
+
+	// Calculate time until next 5-minute interval
+	now := time.Now()
+	// Round up to next 5-minute mark
+	nextInterval := now.Truncate(5 * time.Minute)
+	if nextInterval.Before(now) || nextInterval.Equal(now) {
+		nextInterval = nextInterval.Add(5 * time.Minute)
+	}
+	waitDuration := nextInterval.Sub(now)
+	
+	d.display.ShowInfo("Waiting until next 5-minute interval: " + nextInterval.Format("15:04:05"))
+	
+	// Wait until the next 5-minute interval
+	timer := time.NewTimer(waitDuration)
+	defer timer.Stop()
+	
+	select {
+	case <-d.ctx.Done():
+		d.display.ShowInfo("Daemon shutting down...")
+		return
+	case <-timer.C:
+		// Record first activity at the aligned time
+		if d.services != nil {
+			if err := d.services.Activity.RecordActivity(); err != nil {
+				log.Printf("Failed to record activity: %v", err)
+			} else {
+				d.display.ShowInfo("Activity recorded at " + time.Now().Format("15:04:05"))
+			}
+		}
+	}
+	
+	// Now start regular 5-minute ticker
 	activityTicker := time.NewTicker(5 * time.Minute)
 	defer activityTicker.Stop()
-
-	d.display.ShowInfo("Daemon monitoring started")
 
 	for {
 		select {
@@ -145,7 +170,7 @@ func (d *Daemon) run() {
 				if err := d.services.Activity.RecordActivity(); err != nil {
 					log.Printf("Failed to record activity: %v", err)
 				} else {
-					d.display.ShowInfo("Activity recorded")
+					d.display.ShowInfo("Activity recorded at " + time.Now().Format("15:04:05"))
 				}
 			}
 		}
