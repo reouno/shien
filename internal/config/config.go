@@ -3,8 +3,9 @@ package config
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"sync"
+	
+	"shien/internal/paths"
 )
 
 // Config holds application configuration
@@ -37,17 +38,7 @@ type Manager struct {
 
 // NewManager creates a new config manager
 func NewManager() (*Manager, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	
-	configDir := filepath.Join(homeDir, ".config", "shien")
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return nil, err
-	}
-	
-	configPath := filepath.Join(configDir, "config.json")
+	configPath := paths.ConfigFile()
 	
 	m := &Manager{
 		configPath: configPath,

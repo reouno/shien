@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 	
+	"shien/internal/paths"
 	"shien/internal/service"
 )
 
@@ -24,13 +24,7 @@ type Server struct {
 
 // NewServer creates a new RPC server
 func NewServer(services *service.Services) (*Server, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	
-	socketDir := filepath.Join(homeDir, ".config", "shien")
-	socketPath := filepath.Join(socketDir, "shien.sock")
+	socketPath := paths.SocketFile()
 	
 	// Remove existing socket file if it exists
 	os.Remove(socketPath)

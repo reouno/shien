@@ -3,11 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
 	"sync"
 	
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	"shien/internal/paths"
 )
 
 // DB represents the database connection
@@ -19,19 +18,8 @@ type DB struct {
 
 // New creates a new database connection
 func New() (*DB, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	
-	// Create data directory
-	dataDir := filepath.Join(homeDir, ".config", "shien")
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		return nil, err
-	}
-	
 	// Database file path
-	dbPath := filepath.Join(dataDir, "shien.db")
+	dbPath := paths.DatabaseFile()
 	
 	// Open database connection
 	conn, err := sql.Open("sqlite3", dbPath)

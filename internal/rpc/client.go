@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"time"
+	
+	"shien/internal/paths"
 )
 
 // Client connects to the RPC server
@@ -16,12 +17,7 @@ type Client struct {
 
 // NewClient creates a new RPC client
 func NewClient() (*Client, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	
-	socketPath := filepath.Join(homeDir, ".config", "shien", "shien.sock")
+	socketPath := paths.SocketFile()
 	
 	return &Client{
 		socketPath: socketPath,

@@ -10,10 +10,34 @@ import (
 	"time"
 	
 	"shien/internal/database/repository"
+	"shien/internal/paths"
 	"shien/internal/rpc"
 )
 
 func main() {
+	// Parse global flags first
+	var dataDir string
+	newArgs := []string{os.Args[0]} // Keep program name
+	
+	i := 1
+	for i < len(os.Args) {
+		if os.Args[i] == "--data-dir" && i+1 < len(os.Args) {
+			dataDir = os.Args[i+1]
+			i += 2 // Skip both --data-dir and its value
+		} else {
+			newArgs = append(newArgs, os.Args[i])
+			i++
+		}
+	}
+	os.Args = newArgs
+	
+	// Set custom data directory if provided
+	if dataDir != "" {
+		if err := paths.SetDataDir(dataDir); err != nil {
+			log.Fatalf("Failed to set data directory: %v", err)
+		}
+	}
+	
 	if len(os.Args) < 2 {
 		printUsage()
 		os.Exit(1)
@@ -46,7 +70,10 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println("Usage: shienctl <command> [options]")
+	fmt.Println("Usage: shienctl [--data-dir <path>] <command> [options]")
+	fmt.Println()
+	fmt.Println("Global Options:")
+	fmt.Println("  --data-dir <path>   Use custom data directory")
 	fmt.Println()
 	fmt.Println("Commands:")
 	fmt.Println("  status              Show daemon status")

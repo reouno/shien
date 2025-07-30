@@ -52,3 +52,6 @@ debug.test
 # Temporary files
 *.tmp
 *.temp
+
+# Development data directory
+.dev/
