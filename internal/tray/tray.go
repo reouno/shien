@@ -3,6 +3,10 @@ package tray
 import (
 	"fmt"
 	"github.com/getlantern/systray"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"shien/internal/notification"
 	"time"
 )
@@ -70,6 +74,9 @@ func (t *Tray) onReady() {
 	mStatus := systray.AddMenuItem("Status: Running", "Shien daemon status")
 	systray.AddSeparator()
 	
+	// Recent activity menu
+	mRecentActivity := systray.AddMenuItem("Recent Activity", "View recent activity logs")
+	
 	// Recent notifications submenu
 	mNotifications := systray.AddMenuItem("Recent Notifications", "View recent notifications")
 	mClearNotifications := systray.AddMenuItem("Clear Notifications", "Clear all notifications")
@@ -107,6 +114,15 @@ func (t *Tray) onReady() {
 				// Toggle status display
 				mStatus.SetTitle("Status: Running ✓")
 				
+			case <-mRecentActivity.ClickedCh:
+				// Open terminal and run shienctl activity -today
+				go func() {
+					command := getShienctlCommand("activity -today")
+					if err := openTerminalWithCommand(command); err != nil {
+						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
+					}
+				}()
+				
 			case <-mNotifications.ClickedCh:
 				// Show notification history (in real app, would open a window)
 				if len(notificationHistory) == 0 {
@@ -130,4 +146,62 @@ func (t *Tray) onReady() {
 
 func (t *Tray) onExit() {
 	// Cleanup code here
+}
+
+// getShienctlCommand returns the appropriate shienctl command based on environment
+func getShienctlCommand(args string) string {
+	// Try to find shienctl in PATH first
+	if _, err := exec.LookPath("shienctl"); err == nil {
+		return fmt.Sprintf("shienctl %s", args)
+	}
+	
+	// If not found in PATH, try current executable's directory (development mode)
+	if exePath, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exePath)
+		shienctlPath := filepath.Join(dir, "shienctl")
+		if _, err := os.Stat(shienctlPath); err == nil {
+			return fmt.Sprintf("%s %s", shienctlPath, args)
+		}
+	}
+	
+	// Fallback to just shienctl (will fail if not in PATH)
+	return fmt.Sprintf("shienctl %s", args)
+}
+
+// openTerminalWithCommand opens a terminal and runs the specified command
+func openTerminalWithCommand(command string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		// macOS - Use osascript to open Terminal app
+		script := fmt.Sprintf(`tell application "Terminal"
+			do script "%s"
+			activate
+		end tell`, command)
+		cmd := exec.Command("osascript", "-e", script)
+		return cmd.Start()
+	case "linux":
+		// Try common terminal emulators
+		terminals := []string{"gnome-terminal", "konsole", "xterm", "xfce4-terminal"}
+		for _, term := range terminals {
+			if _, err := exec.LookPath(term); err == nil {
+				var cmd *exec.Cmd
+				switch term {
+				case "gnome-terminal":
+					cmd = exec.Command(term, "--", "bash", "-c", command+"; read -p 'Press Enter to close...'")
+				case "konsole":
+					cmd = exec.Command(term, "-e", "bash", "-c", command+"; read -p 'Press Enter to close...'")
+				default:
+					cmd = exec.Command(term, "-e", "bash", "-c", command+"; read -p 'Press Enter to close...'")
+				}
+				return cmd.Start()
+			}
+		}
+		return fmt.Errorf("no terminal emulator found")
+	case "windows":
+		// Windows - Use cmd.exe
+		cmd := exec.Command("cmd", "/c", "start", "cmd", "/k", command)
+		return cmd.Start()
+	default:
+		return fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+	}
 }
