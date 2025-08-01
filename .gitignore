@@ -26,8 +26,8 @@ go.work.sum
 tmp/
 
 # Project binary (only in root directory)
+/shien-service
 /shien
-/shienctl
 
 # IDE specific files
 .idea/

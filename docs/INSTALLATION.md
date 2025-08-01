@@ -34,13 +34,13 @@ make install-all
    ```
 3. Move binaries to your PATH:
    ```bash
-   sudo mv shien shienctl /usr/local/bin/
+   sudo mv shien-service shien /usr/local/bin/
    ```
 
 ## Verify Installation
 
 ```bash
-shienctl ping
+shien ping
 ```
 
 ## Uninstallation
@@ -55,5 +55,5 @@ brew uninstall shien
 ### Manual
 
 ```bash
-sudo rm /usr/local/bin/shien /usr/local/bin/shienctl
+sudo rm /usr/local/bin/shien-service /usr/local/bin/shien
 ```

@@ -1,4 +1,4 @@
-# shienctl - Shien CLI Client
+# shien - Shien CLI Client
 
 Command-line interface for interacting with the Shien daemon.
 
@@ -7,42 +7,42 @@ Command-line interface for interacting with the Shien daemon.
 ```bash
 make install-cli
 # or
-go install ./cmd/shienctl
+go install ./cmd/shien
 ```
 
 ## Usage
 
 ### Check daemon status
 ```bash
-shienctl ping
-shienctl status
+shien ping
+shien status
 ```
 
 ### View activity logs
 ```bash
 # Today's activity
-shienctl activity -today
+shien activity -today
 
 # Specific date range
-shienctl activity -from 2024-01-01 -to 2024-01-31
+shien activity -from 2024-01-01 -to 2024-01-31
 
 # Last 24 hours (default)
-shienctl activity
+shien activity
 ```
 
 ### Configuration
 ```bash
 # View current configuration
-shienctl config
+shien config
 
 # Update configuration (future feature)
-# shienctl config set notification_enabled=true
+# shien config set notification_enabled=true
 ```
 
 ## Architecture
 
 The CLI communicates with the daemon via Unix socket located at:
-- `~/.config/shien/shien.sock`
+- `~/.config/shien/shien-service.sock`
 
 This ensures:
 - Only the user who started the daemon can access it

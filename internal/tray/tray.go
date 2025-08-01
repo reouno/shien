@@ -62,7 +62,7 @@ func (t *Tray) SendNotification(title, message string) {
 	
 	// Show OS notification using the notification manager
 	t.notifier.SendWithOptions(title, message, notification.Options{
-		Group: "shien",
+		Group: "shien-service",
 	})
 }
 
@@ -72,7 +72,7 @@ func (t *Tray) onReady() {
 	systray.SetTooltip(t.tooltip)
 	
 	// Create menu items
-	mStatus := systray.AddMenuItem("Status: Running", "Shien daemon status")
+	mStatus := systray.AddMenuItem("Status: Running", "Shien service status")
 	systray.AddSeparator()
 	
 	// Recent activity menu
@@ -118,7 +118,7 @@ func (t *Tray) onReady() {
 			case <-mRecentActivity.ClickedCh:
 				// Open terminal and run shienctl activity -today
 				go func() {
-					command := getShienctlCommand("activity -today")
+					command := getShienCommand("activity -today")
 					if err := openTerminalWithCommand(command); err != nil {
 						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
 					}
@@ -149,22 +149,22 @@ func (t *Tray) onExit() {
 	// Cleanup code here
 }
 
-// getShienctlCommand returns the appropriate shienctl command based on environment
-func getShienctlCommand(args string) string {
-	// In development, prefer local shienctl if it exists alongside shien
+// getShienCommand returns the appropriate shien command based on environment
+func getShienCommand(args string) string {
+	// In development, prefer local shien if it exists alongside shien-service
 	if exePath, err := os.Executable(); err == nil {
 		dir := filepath.Dir(exePath)
-		shienctlPath := filepath.Join(dir, "shienctl")
-		if _, err := os.Stat(shienctlPath); err == nil {
+		shienPath := filepath.Join(dir, "shien")
+		if _, err := os.Stat(shienPath); err == nil {
 			// If running from source directory (not installed path)
 			if !strings.Contains(dir, "/usr/") && !strings.Contains(dir, "/opt/") && !strings.Contains(dir, "go/bin") {
-				return fmt.Sprintf("%s %s", shienctlPath, args)
+				return fmt.Sprintf("%s %s", shienPath, args)
 			}
 		}
 	}
 	
-	// Otherwise use shienctl from PATH
-	return fmt.Sprintf("shienctl %s", args)
+	// Otherwise use shien from PATH
+	return fmt.Sprintf("shien %s", args)
 }
 
 // openTerminalWithCommand opens a terminal and runs the specified command

@@ -15,7 +15,7 @@ brew services start shien
 ### Verify Installation
 
 ```bash
-shienctl ping
+shien ping
 ```
 
 ## Build and Run
@@ -31,7 +31,7 @@ make build
 make run
 
 # Or run the built binary directly
-./shien
+./shien-service
 ```
 
 ### Install
