@@ -1,0 +1,58 @@
+package commands
+
+import (
+	"fmt"
+
+	"shien/internal/rpc"
+)
+
+// ExampleCommand is a template for new commands
+type ExampleCommand struct{}
+
+// NewExampleCommand creates a new example command
+func NewExampleCommand() *ExampleCommand {
+	return &ExampleCommand{}
+}
+
+// Name returns the command name
+func (c *ExampleCommand) Name() string {
+	return "example"
+}
+
+// Description returns the command description
+func (c *ExampleCommand) Description() string {
+	return "Example command description"
+}
+
+// Usage returns the command usage
+func (c *ExampleCommand) Usage() string {
+	return `example [options]
+    -flag1            Description of flag1
+    -flag2 <value>    Description of flag2`
+}
+
+// Execute runs the example command
+func (c *ExampleCommand) Execute(client *rpc.Client, args []string) error {
+	// 1. Parse flags if needed
+	// flags := flag.NewFlagSet("example", flag.ExitOnError)
+	// flag1 := flags.Bool("flag1", false, "Description")
+	// if err := flags.Parse(args); err != nil {
+	//     return fmt.Errorf("failed to parse flags: %w", err)
+	// }
+
+	// 2. Call RPC method if needed
+	// resp, err := client.Call(rpc.MethodExample, params)
+	// if err != nil {
+	//     return fmt.Errorf("failed to call example: %w", err)
+	// }
+
+	// 3. Process and display results
+	fmt.Println("Example command executed")
+	
+	return nil
+}
+
+// To add this command to shien:
+// 1. Create a new file in internal/cli/commands/ with your command implementation
+// 2. Add the following line to registerCommands() in cmd/shien/main.go:
+//    registry.Register(commands.NewExampleCommand())
