@@ -3,7 +3,15 @@
 DAEMON_NAME=shien-service
 CLI_NAME=shien
 GO=go
-GOFLAGS=-ldflags="-s -w"
+
+# Version information
+VERSION?=dev
+GIT_COMMIT=$(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
+
+# Build flags
+LDFLAGS=-ldflags="-s -w -X 'shien/internal/version.Version=$(VERSION)' -X 'shien/internal/version.GitCommit=$(GIT_COMMIT)' -X 'shien/internal/version.BuildTime=$(BUILD_TIME)'"
+GOFLAGS=$(LDFLAGS)
 DEV_TAGS=-tags dev
 
 build: build-daemon

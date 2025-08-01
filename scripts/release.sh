@@ -32,25 +32,31 @@ if ! git diff-index --quiet HEAD --; then
     exit 1
 fi
 
-# 3. タグを作成してプッシュ
+# 3. バージョン情報を含めてビルド（確認用）
+echo -e "${YELLOW}Building with version ${VERSION} for verification...${NC}"
+VERSION=${VERSION} make build-all
+echo -e "${GREEN}Version check:${NC}"
+./shien --version
+
+# 4. タグを作成してプッシュ
 echo -e "${YELLOW}Creating and pushing tag ${TAG}...${NC}"
 git tag -a "$TAG" -m "Release version ${VERSION}"
 git push origin "$TAG"
 
-# 4. GitHub Actionsの完了を待つ
+# 5. GitHub Actionsの完了を待つ
 echo -e "${YELLOW}Waiting for GitHub Actions to complete the release...${NC}"
 echo "Please check: https://github.com/reouno/shien/actions"
 echo "Press Enter when the release is complete..."
 read -r
 
-# 5. リリースファイルのSHA256を取得
+# 6. リリースファイルのSHA256を取得
 echo -e "${YELLOW}Downloading release and calculating SHA256...${NC}"
 RELEASE_URL="https://github.com/reouno/shien/releases/download/${TAG}/shien-darwin-arm64.tar.gz"
 curl -sL "$RELEASE_URL" -o /tmp/shien-release.tar.gz
 SHA256=$(shasum -a 256 /tmp/shien-release.tar.gz | awk '{print $1}')
 echo "SHA256: $SHA256"
 
-# 6. homebrew-shienリポジトリの場所を確認
+# 7. homebrew-shienリポジトリの場所を確認
 HOMEBREW_REPO_PATH=""
 if [ -d "$HOME/homebrew-shien" ]; then
     HOMEBREW_REPO_PATH="$HOME/homebrew-shien"
@@ -61,7 +67,7 @@ else
     read -r HOMEBREW_REPO_PATH
 fi
 
-# 7. Formula を更新
+# 8. Formula を更新
 echo -e "${YELLOW}Updating Homebrew formula...${NC}"
 FORMULA_PATH="$HOMEBREW_REPO_PATH/Formula/shien.rb"
 sed -i.bak "s/version \".*\"/version \"${VERSION}\"/" "$FORMULA_PATH"
@@ -69,7 +75,7 @@ sed -i.bak "s|download/v[0-9.]*|download/${TAG}|g" "$FORMULA_PATH"
 sed -i.bak "s/sha256 \".*\"/sha256 \"${SHA256}\"/" "$FORMULA_PATH"
 rm "$FORMULA_PATH.bak"
 
-# 8. Formulaの変更をコミット・プッシュ
+# 9. Formulaの変更をコミット・プッシュ
 cd "$HOMEBREW_REPO_PATH"
 git add Formula/shien.rb
 git commit -m "Update shien to ${VERSION}"

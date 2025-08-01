@@ -13,6 +13,7 @@ import (
 	"shien/internal/database/repository"
 	"shien/internal/paths"
 	"shien/internal/rpc"
+	"shien/internal/version"
 )
 
 func main() {
@@ -63,6 +64,9 @@ func main() {
 		handlePing(client)
 	case "help", "-h", "--help":
 		printUsage()
+	case "version", "--version", "-v":
+		fmt.Printf("shien version %s\n", version.GetFullVersion())
+		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		printUsage()
@@ -75,6 +79,7 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("Global Options:")
 	fmt.Println("  --data-dir <path>   Use custom data directory")
+	fmt.Println("  --version, -v       Show version information")
 	fmt.Println()
 	fmt.Println("Commands:")
 	fmt.Println("  status              Show daemon status")
@@ -84,6 +89,7 @@ func printUsage() {
 	fmt.Println("    -today            Show today's activity")
 	fmt.Println("  config              Show current configuration")
 	fmt.Println("  ping               Check if daemon is running")
+	fmt.Println("  version             Show version information")
 	fmt.Println("  help               Show this help message")
 }
 

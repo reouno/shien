@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"shien/internal/notification"
+	"shien/internal/version"
 	"time"
 )
 
@@ -73,6 +74,8 @@ func (t *Tray) onReady() {
 	
 	// Create menu items
 	mStatus := systray.AddMenuItem("Status: Running", "Shien service status")
+	mVersion := systray.AddMenuItem(fmt.Sprintf("Version: %s", version.GetVersion()), "Shien version")
+	mVersion.Disable()
 	systray.AddSeparator()
 	
 	// Recent activity menu
