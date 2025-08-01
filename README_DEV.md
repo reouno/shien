@@ -4,22 +4,18 @@ This document explains how to run Shien in development mode without affecting yo
 
 ## Quick Start
 
-Use the `dev.sh` script to run Shien with an isolated data directory:
+Use the development build commands to run Shien with an isolated data directory:
 
 ```bash
-# Build binaries
-./dev.sh make build      # Build daemon only
-./dev.sh make build-all  # Build both daemon and CLI
+# Build binaries in development mode
+make dev-build-all  # Build both daemon and CLI with dev tags
 
 # Run daemon in development mode
-./dev.sh make run
+./shien-service --data-dir .dev/data
 
-# Or if already built
-./dev.sh ./shien
-
-# Use shienctl with development data
-./dev.sh shienctl status
-./dev.sh shienctl activity -today
+# Use CLI with development data
+./shien --data-dir .dev/data status
+./shien --data-dir .dev/data activity -today
 ```
 
 ## How It Works
@@ -36,10 +32,10 @@ You can also manually specify the data directory:
 
 ```bash
 # Run daemon with custom data directory
-./shien --data-dir /path/to/dev/data
+./shien-service --data-dir /path/to/dev/data
 
-# Use shienctl with same data directory
-shienctl --data-dir /path/to/dev/data status
+# Use CLI with same data directory
+./shien --data-dir /path/to/dev/data status
 ```
 
 ## Priority Order
@@ -54,7 +50,7 @@ The data directory is determined in this order:
 When using a custom data directory, all files are created there:
 - `config.json` - Configuration file
 - `shien.db` - SQLite database
-- `shien.sock` - Unix socket for IPC
+- `shien-service.sock` - Unix socket for IPC
 
 ## Note
 

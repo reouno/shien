@@ -5,10 +5,10 @@ before:
     - go mod tidy
 
 builds:
-  # shien daemon - macOS only due to systray dependency
-  - id: shien-darwin
-    main: ./cmd/shien
-    binary: shien
+  # shien-service daemon - macOS only due to systray dependency
+  - id: shien-service-darwin
+    main: ./cmd/shien-service
+    binary: shien-service
     goos:
       - darwin
     goarch:
@@ -19,10 +19,10 @@ builds:
     ldflags:
       - -s -w
 
-  # shienctl - also macOS only since we're distributing via Homebrew
-  - id: shienctl
-    main: ./cmd/shienctl
-    binary: shienctl
+  # shien CLI - also macOS only since we're distributing via Homebrew
+  - id: shien
+    main: ./cmd/shien
+    binary: shien
     goos:
       - darwin
     goarch:

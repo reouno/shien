@@ -1,7 +1,7 @@
 .PHONY: build build-all build-daemon build-cli run clean install install-all test dev-build-all
 
-DAEMON_NAME=shien
-CLI_NAME=shienctl
+DAEMON_NAME=shien-service
+CLI_NAME=shien
 GO=go
 GOFLAGS=-ldflags="-s -w"
 DEV_TAGS=-tags dev
@@ -12,15 +12,15 @@ build-all: build-daemon build-cli
 
 # Development build targets
 dev-build-all:
-	$(GO) build $(GOFLAGS) $(DEV_TAGS) -o $(DAEMON_NAME) ./cmd/shien
-	$(GO) build $(GOFLAGS) $(DEV_TAGS) -o $(CLI_NAME) ./cmd/shienctl
+	$(GO) build $(GOFLAGS) $(DEV_TAGS) -o $(DAEMON_NAME) ./cmd/shien-service
+	$(GO) build $(GOFLAGS) $(DEV_TAGS) -o $(CLI_NAME) ./cmd/shien
 	@echo "Built development version - data directory: .dev/data"
 
 build-daemon:
-	$(GO) build $(GOFLAGS) -o $(DAEMON_NAME) ./cmd/shien
+	$(GO) build $(GOFLAGS) -o $(DAEMON_NAME) ./cmd/shien-service
 
 build-cli:
-	$(GO) build $(GOFLAGS) -o $(CLI_NAME) ./cmd/shienctl
+	$(GO) build $(GOFLAGS) -o $(CLI_NAME) ./cmd/shien
 
 run: build-daemon
 	./$(DAEMON_NAME)
@@ -32,14 +32,14 @@ clean:
 install: install-all
 
 install-all: build-all
+	$(GO) install ./cmd/shien-service
 	$(GO) install ./cmd/shien
-	$(GO) install ./cmd/shienctl
 
 install-daemon: build-daemon
-	$(GO) install ./cmd/shien
+	$(GO) install ./cmd/shien-service
 
 install-cli: build-cli
-	$(GO) install ./cmd/shienctl
+	$(GO) install ./cmd/shien
 
 test:
 	$(GO) test -v ./...

@@ -66,7 +66,7 @@ func (d *Daemon) Start() error {
 	d.ctx, d.cancel = context.WithCancel(context.Background())
 
 	// Display startup message
-	d.display.ShowBanner("Shien Daemon Started", "Supporting your knowledge work")
+	d.display.ShowBanner("Shien Service Started", "Supporting your knowledge work")
 	d.display.ShowSuccess("Daemon is ready")
 
 	// Show config and database locations

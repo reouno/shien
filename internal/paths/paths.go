@@ -99,7 +99,7 @@ func DatabaseFile() string {
 
 func SocketFile() string {
 	initDataDir()
-	return filepath.Join(dataDir, "shien.sock")
+	return filepath.Join(dataDir, "shien-service.sock")
 }
 
 func IsDevMode() bool {
