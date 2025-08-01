@@ -82,7 +82,7 @@ git commit -m "Update shien to ${VERSION}"
 git push
 
 echo -e "${GREEN}Release completed successfully!${NC}"
-echo -e "${GREEN}Users can now update with: brew upgrade shien${NC}"
+echo -e "${GREEN}Users can now update with: brew update && brew upgrade shien${NC}"
 
 # クリーンアップ
 rm -f /tmp/shien-release.tar.gz
