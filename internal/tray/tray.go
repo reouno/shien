@@ -78,8 +78,13 @@ func (t *Tray) onReady() {
 	mVersion.Disable()
 	systray.AddSeparator()
 	
-	// Recent activity menu
-	mRecentActivity := systray.AddMenuItem("Recent Activity", "View recent activity logs")
+	// Daily activity menu
+	mDailyActivity := systray.AddMenuItem("Daily Activity", "View today's activity logs")
+	
+	// Weekly activity menu
+	mWeeklyActivity := systray.AddMenuItem("Weekly Activity", "View weekly activity summary")
+	mWeeklyDaily := mWeeklyActivity.AddSubMenuItem("Daily Summary", "View last 7 days summary")
+	mWeeklyHourly := mWeeklyActivity.AddSubMenuItem("Hourly Average", "View hourly average over last 7 days")
 	
 	// Game status menu
 	mGameStatus := systray.AddMenuItem("Game Status", "View gamification status")
@@ -121,10 +126,28 @@ func (t *Tray) onReady() {
 				// Toggle status display
 				mStatus.SetTitle("Status: Running ✓")
 				
-			case <-mRecentActivity.ClickedCh:
+			case <-mDailyActivity.ClickedCh:
 				// Open terminal and run shien activity -today
 				go func() {
 					command := getShienCommand("activity -today")
+					if err := openTerminalWithCommand(command); err != nil {
+						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
+					}
+				}()
+				
+			case <-mWeeklyDaily.ClickedCh:
+				// Open terminal and run shien weekly -daily
+				go func() {
+					command := getShienCommand("weekly -daily")
+					if err := openTerminalWithCommand(command); err != nil {
+						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
+					}
+				}()
+				
+			case <-mWeeklyHourly.ClickedCh:
+				// Open terminal and run shien weekly -hourly
+				go func() {
+					command := getShienCommand("weekly -hourly")
 					if err := openTerminalWithCommand(command); err != nil {
 						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
 					}
