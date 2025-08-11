@@ -152,6 +152,107 @@ func (s *Server) handleRequest(req Request) Response {
 			Data:    s.services.Config.GetConfig(),
 		}
 		
+	case MethodGetGamificationStatus:
+		userID := "default_user" // Default for now
+		if id, ok := req.Params["user_id"].(string); ok {
+			userID = id
+		}
+		
+		status, err := s.services.Gamification.GetEffectiveStatus(userID)
+		if err != nil {
+			return Response{
+				Success: false,
+				Error:   err.Error(),
+			}
+		}
+		
+		// Calculate next level experience requirement
+		config := s.services.Gamification.GetConfig()
+		nextLevelExp := config.ExpForLevel(status.Level + 1)
+		
+		return Response{
+			Success: true,
+			Data: GamificationStatus{
+				UserID:        status.UserID,
+				Level:         status.Level,
+				Experience:    status.Experience,
+				TotalExp:      status.TotalExp,
+				NextLevelExp:  nextLevelExp,
+				Focus:         status.Focus,
+				Productivity:  status.Productivity,
+				Creativity:    status.Creativity,
+				Stamina:       status.Stamina,
+				Knowledge:     status.Knowledge,
+				Collaboration: status.Collaboration,
+				UpdatedAt:     status.UpdatedAt,
+			},
+		}
+		
+	case MethodGetGamificationDetails:
+		userID := "default_user" // Default for now
+		if id, ok := req.Params["user_id"].(string); ok {
+			userID = id
+		}
+		
+		status, err := s.services.Gamification.GetEffectiveStatus(userID)
+		if err != nil {
+			return Response{
+				Success: false,
+				Error:   err.Error(),
+			}
+		}
+		
+		// Get modifiers
+		modifiers, err := s.services.Gamification.GetModifiers(userID)
+		if err != nil {
+			return Response{
+				Success: false,
+				Error:   err.Error(),
+			}
+		}
+		
+		// Convert modifiers to RPC format
+		rpcModifiers := make([]AttributeModifier, len(modifiers))
+		for i, mod := range modifiers {
+			rpcModifiers[i] = AttributeModifier{
+				Attribute: mod.Attribute,
+				Value:     mod.Value,
+				Reason:    mod.Reason,
+				ExpiresAt: mod.ExpiresAt,
+			}
+		}
+		
+		// Get today's app usage
+		today := time.Now()
+		startOfDay := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+		appUsage, _ := s.services.Activity.GetAppUsageSummary(startOfDay, today)
+		
+		// Calculate next level experience requirement
+		config := s.services.Gamification.GetConfig()
+		nextLevelExp := config.ExpForLevel(status.Level + 1)
+		
+		return Response{
+			Success: true,
+			Data: GamificationDetails{
+				Status: &GamificationStatus{
+					UserID:        status.UserID,
+					Level:         status.Level,
+					Experience:    status.Experience,
+					TotalExp:      status.TotalExp,
+					NextLevelExp:  nextLevelExp,
+					Focus:         status.Focus,
+					Productivity:  status.Productivity,
+					Creativity:    status.Creativity,
+					Stamina:       status.Stamina,
+					Knowledge:     status.Knowledge,
+					Collaboration: status.Collaboration,
+					UpdatedAt:     status.UpdatedAt,
+				},
+				Modifiers:  rpcModifiers,
+				RecentApps: appUsage,
+			},
+		}
+		
 	default:
 		return Response{
 			Success: false,

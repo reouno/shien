@@ -85,6 +85,7 @@ func registerCommands(registry *commands.Registry) {
 	registry.Register(commands.NewActivityCommand())
 	registry.Register(commands.NewConfigCommand())
 	registry.Register(commands.NewPingCommand())
+	registry.Register(commands.NewGameCommand())
 }
 
 func printUsage() {
@@ -102,7 +103,7 @@ func printUsage() {
 	
 	// Display each command with its description
 	commandList := registry.List()
-	for _, cmd := range []string{"status", "activity", "config", "ping"} { // Maintain order
+	for _, cmd := range []string{"status", "activity", "game", "config", "ping"} { // Maintain order
 		if command, exists := commandList[cmd]; exists {
 			fmt.Printf("  %-20s %s\n", command.Name(), command.Description())
 			if command.Usage() != command.Name() {

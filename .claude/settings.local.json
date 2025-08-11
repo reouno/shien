@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash",
@@ -43,7 +44,9 @@
       "Bash(defaults read:*)",
       "Bash(/Users/leo/src/shien/test_notifications.sh)",
       "Bash(go mod edit:*)",
-      "Bash(go mod:*)"
+      "Bash(go mod:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gist.github.com)"
     ],
     "deny": []
   }

@@ -15,8 +15,9 @@ type Migration struct {
 func All() []Migration {
 	return []Migration{
 		Migration001ActivityLogs,
+		Migration002_Gamification,
+		Migration003_AddAppNameToActivity,
 		// Future migrations will be added here:
-		// Migration002UserTable,
-		// Migration003AddFieldToActivityLogs,
+		// Migration004AddFieldToActivityLogs,
 	}
 }

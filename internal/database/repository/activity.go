@@ -11,6 +11,7 @@ import (
 type ActivityLog struct {
 	ID         int64          `json:"id"`
 	RecordedAt utils.UTCTime `json:"recorded_at"`
+	AppName    *string        `json:"app_name,omitempty"`
 }
 
 // ActivityRepo implements ActivityRepository
@@ -37,10 +38,27 @@ func (r *ActivityRepo) RecordActivity() error {
 	return err
 }
 
+// RecordActivityWithApp records activity with the application name
+func (r *ActivityRepo) RecordActivityWithApp(appName string) error {
+	// Round to minute precision
+	now := utils.Now().TruncateToMinute()
+	
+	// Try to insert, ignore if already exists for this minute
+	// If it exists, update the app_name
+	_, err := r.conn.Exec(`
+		INSERT INTO activity_logs (recorded_at, app_name) 
+		VALUES (?, ?)
+		ON CONFLICT(strftime('%Y-%m-%d %H:%M', recorded_at))
+		DO UPDATE SET app_name = excluded.app_name
+	`, now, appName)
+	
+	return err
+}
+
 // GetActivityLogs returns activity logs within a time range
 func (r *ActivityRepo) GetActivityLogs(from, to time.Time) ([]ActivityLog, error) {
 	rows, err := r.conn.Query(`
-		SELECT id, recorded_at 
+		SELECT id, recorded_at, app_name
 		FROM activity_logs 
 		WHERE recorded_at >= ? 
 		  AND recorded_at <= ?
@@ -54,7 +72,7 @@ func (r *ActivityRepo) GetActivityLogs(from, to time.Time) ([]ActivityLog, error
 	var logs []ActivityLog
 	for rows.Next() {
 		var log ActivityLog
-		err := rows.Scan(&log.ID, &log.RecordedAt)
+		err := rows.Scan(&log.ID, &log.RecordedAt, &log.AppName)
 		if err != nil {
 			return nil, err
 		}

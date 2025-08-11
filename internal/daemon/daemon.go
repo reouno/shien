@@ -145,9 +145,9 @@ func (d *Daemon) run() {
 		d.display.ShowInfo("Daemon shutting down...")
 		return
 	case <-timer.C:
-		// Record first activity at the aligned time
+		// Record first activity at the aligned time with app name
 		if d.services != nil {
-			if err := d.services.Activity.RecordActivity(); err != nil {
+			if err := d.services.Activity.RecordActivityWithApp(); err != nil {
 				log.Printf("Failed to record activity: %v", err)
 			} else {
 				d.display.ShowInfo("Activity recorded at " + time.Now().Format("15:04:05"))
@@ -165,12 +165,28 @@ func (d *Daemon) run() {
 			d.display.ShowInfo("Daemon shutting down...")
 			return
 		case <-activityTicker.C:
-			// Record activity
+			// Record activity with app name
 			if d.services != nil {
-				if err := d.services.Activity.RecordActivity(); err != nil {
+				if err := d.services.Activity.RecordActivityWithApp(); err != nil {
 					log.Printf("Failed to record activity: %v", err)
 				} else {
 					d.display.ShowInfo("Activity recorded at " + time.Now().Format("15:04:05"))
+					
+					// Process gamification based on app usage
+					go func() {
+						if d.services.Gamification != nil {
+							// Get the app name that was just recorded
+							appName, _ := d.services.Activity.GetLastRecordedApp()
+							if appName != "" {
+								// Default user ID for now
+								userID := "default_user"
+								// Process the last 5 minutes of activity with this app
+								if err := d.services.Gamification.ProcessActivity(userID, appName, 5*time.Minute); err != nil {
+									log.Printf("Failed to process gamification: %v", err)
+								}
+							}
+						}
+					}()
 				}
 			}
 		}

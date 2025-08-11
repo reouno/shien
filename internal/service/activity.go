@@ -4,11 +4,13 @@ import (
 	"time"
 	
 	"shien/internal/database/repository"
+	"shien/internal/utils"
 )
 
 // ActivityService handles business logic for activity tracking
 type ActivityService struct {
-	repo *repository.ActivityRepo
+	repo           *repository.ActivityRepo
+	lastRecordedApp string
 }
 
 // NewActivityService creates a new activity service
@@ -19,6 +21,26 @@ func NewActivityService(repo *repository.ActivityRepo) *ActivityService {
 // RecordActivity records current activity
 func (s *ActivityService) RecordActivity() error {
 	return s.repo.RecordActivity()
+}
+
+// RecordActivityWithApp records current activity with the foreground app
+func (s *ActivityService) RecordActivityWithApp() error {
+	// Get the current foreground application
+	appName, err := utils.GetForegroundApp()
+	if err != nil {
+		// If we can't get the app name, still record the activity
+		return s.repo.RecordActivity()
+	}
+	
+	// Store the last recorded app name
+	s.lastRecordedApp = appName
+	
+	return s.repo.RecordActivityWithApp(appName)
+}
+
+// GetLastRecordedApp returns the last recorded app name
+func (s *ActivityService) GetLastRecordedApp() (string, error) {
+	return s.lastRecordedApp, nil
 }
 
 // GetActivityLogs retrieves activity logs for a date range
@@ -61,4 +83,9 @@ func (s *ActivityService) GetDailyStats() (map[string]interface{}, error) {
 		"minutes_active": len(logs) * 5,
 		"hours_active":  float64(len(logs)*5) / 60.0,
 	}, nil
+}
+
+// GetAppUsageSummary returns app usage statistics for a time range
+func (s *ActivityService) GetAppUsageSummary(from, to time.Time) (map[string]int, error) {
+	return s.repo.GetAppUsageSummary(from, to)
 }

@@ -7,15 +7,17 @@ import (
 
 // Services aggregates all service layers
 type Services struct {
-	Activity *ActivityService
-	Config   *ConfigService
+	Activity     *ActivityService
+	Config       *ConfigService
+	Gamification *GamificationService
 }
 
 // NewServices creates all services
 func NewServices(repo *database.Repository, cfg *config.Manager) *Services {
 	return &Services{
-		Activity: NewActivityService(repo.Activity()),
-		Config:   NewConfigService(cfg),
+		Activity:     NewActivityService(repo.Activity()),
+		Config:       NewConfigService(cfg),
+		Gamification: NewGamificationService(repo),
 	}
 }
 

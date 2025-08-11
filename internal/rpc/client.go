@@ -98,3 +98,63 @@ func (c *Client) GetStatus() (*Status, error) {
 	
 	return &status, nil
 }
+
+// GetGamificationStatus gets the user's gamification status
+func (c *Client) GetGamificationStatus(userID string) (*GamificationStatus, error) {
+	params := make(map[string]interface{})
+	if userID != "" {
+		params["user_id"] = userID
+	}
+	
+	resp, err := c.Call(MethodGetGamificationStatus, params)
+	if err != nil {
+		return nil, err
+	}
+	
+	if !resp.Success {
+		return nil, fmt.Errorf("failed to get gamification status: %s", resp.Error)
+	}
+	
+	// Convert response data to GamificationStatus
+	data, err := json.Marshal(resp.Data)
+	if err != nil {
+		return nil, err
+	}
+	
+	var status GamificationStatus
+	if err := json.Unmarshal(data, &status); err != nil {
+		return nil, err
+	}
+	
+	return &status, nil
+}
+
+// GetGamificationDetails gets detailed gamification information
+func (c *Client) GetGamificationDetails(userID string) (*GamificationDetails, error) {
+	params := make(map[string]interface{})
+	if userID != "" {
+		params["user_id"] = userID
+	}
+	
+	resp, err := c.Call(MethodGetGamificationDetails, params)
+	if err != nil {
+		return nil, err
+	}
+	
+	if !resp.Success {
+		return nil, fmt.Errorf("failed to get gamification details: %s", resp.Error)
+	}
+	
+	// Convert response data to GamificationDetails
+	data, err := json.Marshal(resp.Data)
+	if err != nil {
+		return nil, err
+	}
+	
+	var details GamificationDetails
+	if err := json.Unmarshal(data, &details); err != nil {
+		return nil, err
+	}
+	
+	return &details, nil
+}
