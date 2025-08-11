@@ -81,6 +81,9 @@ func (t *Tray) onReady() {
 	// Recent activity menu
 	mRecentActivity := systray.AddMenuItem("Recent Activity", "View recent activity logs")
 	
+	// Game status menu
+	mGameStatus := systray.AddMenuItem("Game Status", "View gamification status")
+	
 	// Recent notifications submenu
 	mNotifications := systray.AddMenuItem("Recent Notifications", "View recent notifications")
 	mClearNotifications := systray.AddMenuItem("Clear Notifications", "Clear all notifications")
@@ -119,9 +122,18 @@ func (t *Tray) onReady() {
 				mStatus.SetTitle("Status: Running ✓")
 				
 			case <-mRecentActivity.ClickedCh:
-				// Open terminal and run shienctl activity -today
+				// Open terminal and run shien activity -today
 				go func() {
 					command := getShienCommand("activity -today")
+					if err := openTerminalWithCommand(command); err != nil {
+						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
+					}
+				}()
+				
+			case <-mGameStatus.ClickedCh:
+				// Open terminal and run shien game --detail
+				go func() {
+					command := getShienCommand("game --detail")
 					if err := openTerminalWithCommand(command); err != nil {
 						t.SendNotification("Error", fmt.Sprintf("Failed to open terminal: %v", err))
 					}
